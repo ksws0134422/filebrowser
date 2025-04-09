@@ -1,10 +1,17 @@
 name: Build for MIPSLE
 
 on:
-  push:
-    branches: [ "main" ]  # 触发分支
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:  # 手动触发
+    inputs:
+      target_arch:
+        description: 'Target Architecture (e.g., mipsle, arm)'
+        required: true
+        default: 'mipsle'
+        type: choice
+        options:
+          - mipsle
+          - arm
+          - amd64
 
 jobs:
   build:
@@ -16,15 +23,17 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.20'  # File Browser 要求 Go 1.16+
+          go-version: '1.20'
 
-      - name: Build MIPSLE binary
+      - name: Build Binary
         run: |
-          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -o filebrowser-mipsle
-          file filebrowser-mipsle  # 验证文件类型
+          GOOS=linux GOARCH=${{ github.event.inputs.target_arch }} \
+          GOMIPS=softfloat \
+          go build -o filebrowser-${{ github.event.inputs.target_arch }}
+          file filebrowser-${{ github.event.inputs.target_arch }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: filebrowser-mipsle
-          path: filebrowser-mipsle
+          name: filebrowser-${{ github.event.inputs.target_arch }}
+          path: filebrowser-${{ github.event.inputs.target_arch }}
