@@ -1,0 +1,30 @@
+name: Build for MIPSLE
+
+on:
+  push:
+    branches: [ "main" ]  # 触发分支
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20'  # File Browser 要求 Go 1.16+
+
+      - name: Build MIPSLE binary
+        run: |
+          GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -o filebrowser-mipsle
+          file filebrowser-mipsle  # 验证文件类型
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: filebrowser-mipsle
+          path: filebrowser-mipsle
